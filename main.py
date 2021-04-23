@@ -1,6 +1,8 @@
 import sqlite3
 import requests
 from bs4 import BeautifulSoup
+import re
+
 
 con = sqlite3.connect('state_numb.db')
 cur = con.cursor()
@@ -86,6 +88,9 @@ con.close()
 def get_info(url):
     #url = 'https://nomer.srs.kg/plate.xhtml?region=01&symbols=001ADA'
     list1 = []
+    replace_list = ['ТипАукционный', 'СтатусПродан','Стартоваяцена','Проданнаяцена']
+    replace_list1 = ['Тип Аукционный ', 'Статус Продан ','Стартовая цена ','Проданная цена ']
+    fin = []
     user_agent = {'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.97 Safari/537.36'}
     source = requests.get(url, headers=user_agent, timeout=10.50)
     html_doc = source.text
@@ -94,13 +99,22 @@ def get_info(url):
     for i in soup:
        t = i.get_text()
        list1.append(t)
-    return "".join(list1)
+    res = " ".join(list1)
+    res1 = re.sub(r'\s+', '', res)
+    res2= re.findall('([А-Я][^А-Я]*)', res1)
+    res3 = "\n".join(res2)
+    res4 = re.findall('[0-9]', res2[5])
+    return res3
 
-#print(get_info('https://nomer.srs.kg/plate.xhtml?region=01&symbols=001AAA'))
+
+print(get_info('https://nomer.srs.kg/plate.xhtml?region=01&symbols=001AAA'))
 
 
 for i in t:
   url = 'https://nomer.srs.kg/plate.xhtml?region=01&symbols=' + i
+  
   url = url.replace('\n', '')
   print(get_info(url))
+  print(f'01KG{i}')
   
+ 
